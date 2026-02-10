@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>飞行部核弹俱乐部</title>
+  <link rel="stylesheet" href="libs/bootstrap.min.css">
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #dee0e3; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #bbbfc4; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    body { background: #f5f6f7; color: #1f2329; font-size: 14px; line-height: 1.6; }
+
+    .layout { display: flex; height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px; min-width: 280px; background: #fff;
+      border-right: 1px solid #e5e6eb; display: flex; flex-direction: column;
+      transition: transform .25s ease;
+    }
+    .sidebar-header {
+      padding: 20px; border-bottom: 1px solid #e5e6eb;
+    }
+    .sidebar-title { font-size: 18px; font-weight: 700; color: #1f2329; margin-bottom: 4px; }
+    .sidebar-subtitle { font-size: 12px; color: #8f959e; }
+    .sidebar-search { padding: 16px; }
+    .sidebar-search input {
+      width: 100%; height: 36px; padding: 0 12px 0 36px; border: 1px solid #dee0e3;
+      border-radius: 8px; font-size: 13px; color: #1f2329; background: #f5f6f7;
+      outline: none; transition: all .2s;
+    }
+    .sidebar-search input:focus { border-color: #3370ff; background: #fff; box-shadow: 0 0 0 2px rgba(51,112,255,.12); }
+    .sidebar-search .search-wrap { position: relative; }
+    .sidebar-search .search-icon {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; color: #8f959e; pointer-events: none;
+    }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 4px 12px 16px; }
+    
+    /* Category Group */
+    .nav-category { margin-bottom: 8px; }
+    .category-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 8px; font-size: 13px;
+      color: #646a73; cursor: pointer; user-select: none;
+      transition: all .15s ease; font-weight: 500;
+    }
+    .category-header:hover { background: #f5f6f7; color: #1f2329; }
+    .category-name { flex: 1; }
+    .category-arrow {
+      width: 14px; height: 14px; transition: transform .2s ease;
+      color: #8f959e;
+    }
+    .category-header.collapsed .category-arrow { transform: rotate(-90deg); }
+    .category-items { 
+      padding-left: 12px; overflow: hidden;
+      transition: max-height .25s ease, opacity .25s ease;
+    }
+    .category-items.collapsed { 
+      max-height: 0 !important; opacity: 0;
+    }
+    
+    .nav-item a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: 8px; font-size: 13px;
+      color: #1f2329; text-decoration: none; cursor: pointer;
+      transition: all .15s ease; user-select: none;
+    }
+    .nav-item a:hover { background: #f0f1f5; }
+    .nav-item a.active { background: #e8edfb; color: #3370ff; font-weight: 500; }
+    .nav-item .nav-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+
+    /* Main Area */
+    .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    
+    /* Mobile Menu Button */
+    .mobile-menu-btn {
+      display: none; position: fixed; top: 16px; left: 16px; z-index: 70;
+      width: 44px; height: 44px; border-radius: 8px;
+      background: #fff; border: 1px solid #dee0e3;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      cursor: pointer; align-items: center; justify-content: center;
+    }
+    .mobile-menu-btn svg { width: 24px; height: 24px; color: #1f2329; }
+    
+    /* Hero */
+    .hero {
+      flex: 1;
+      background: #fff;
+      padding: 40px; 
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .hero-content { 
+      width: 100%; height: 100%;
+      position: relative; overflow: hidden;
+    }
+    .title-item {
+      position: absolute; white-space: nowrap; color: #1f2329;
+      font-weight: 700; font-family: "Microsoft YaHei", sans-serif;
+    }
+    .t1 { font-size: 9vw; top: 5%; left: 3%; transform: rotate(-8deg); }
+    .t2 { font-size: 3.5vw; top: 15%; right: 5%; }
+    .t3 { font-size: 6.5vw; top: 30%; left: -2%; }
+    .t4 { font-size: 2.5vw; top: 25%; right: -1%; transform: rotate(5deg); writing-mode: vertical-rl; }
+    .t5 { font-size: 5vw; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .t6 { font-size: 3vw; bottom: 30%; left: 8%; transform: rotate(-3deg); }
+    .t7 { font-size: 7.5vw; bottom: 15%; right: -2%; }
+    .t8 { font-size: 4.5vw; top: 60%; left: 5%; }
+    .t9 { font-size: 2.8vw; top: 70%; right: 8%; writing-mode: vertical-rl; }
+    .t10 { font-size: 5.5vw; bottom: 5%; left: 25%; transform: rotate(2deg); }
+    .t11 { font-size: 3.8vw; top: 40%; right: 18%; }
+    .t12 { font-size: 4.8vw; bottom: 40%; right: -2%; transform: rotate(-5deg); }
+
+    /* Content */
+    .content-area { display: none; }
+
+    /* Mobile */
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 50; }
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: flex; }
+      .sidebar {
+        position: fixed; left: 0; top: 0; bottom: 0; z-index: 60;
+        transform: translateX(-100%); box-shadow: 4px 0 16px rgba(0,0,0,.08);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.open { display: block; }
+      .hero { padding: 20px; padding-top: 70px; }
+      /* 移动端保持粗野主义，使用绝对定位 */
+      .title-item { position: absolute !important; }
+      .t1 { font-size: 15vw; top: 5%; left: 5%; }
+      .t2 { font-size: 8vw; top: 18%; right: 5%; }
+      .t3 { font-size: 12vw; top: 32%; left: 2%; }
+      .t4 { font-size: 6vw; top: 28%; right: 2%; }
+      .t5 { font-size: 10vw; top: 50%; left: 50%; }
+      .t6 { font-size: 7vw; bottom: 35%; left: 10%; }
+      .t7 { font-size: 14vw; bottom: 18%; right: 2%; }
+      .t8 { font-size: 9vw; top: 62%; left: 5%; }
+      .t9 { font-size: 6vw; top: 72%; right: 10%; }
+      .t10 { font-size: 11vw; bottom: 8%; left: 25%; }
+      .t11 { font-size: 8vw; top: 42%; right: 20%; }
+      .t12 { font-size: 9vw; bottom: 42%; right: 2%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">飞行部核弹俱乐部</div>
+        <div class="sidebar-subtitle">Flight Department Nuclear Club</div>
+      </div>
+      <div class="sidebar-search">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="search" placeholder="搜索文档...">
+        </div>
+      </div>
+      <div class="sidebar-nav" id="nav"></div>
+    </div>
+
+    <div class="main-area">
+      <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="hero"></div>
+        <div class="hero-content">
+          <div class="title-item t1">飞行部核弹俱乐部</div>
+          <div class="title-item t2">杂七杂八</div>
+          <div class="title-item t3">技术管理手册</div>
+          <div class="title-item t4">资料汇总</div>
+          <div class="title-item t5">飞行部核弹俱乐部</div>
+          <div class="title-item t6">训练大纲</div>
+          <div class="title-item t7">在线文档</div>
+          <div class="title-item t8">飞行部核弹俱乐部</div>
+          <div class="title-item t9">技术管理手册</div>
+          <div class="title-item t10">杂七杂八</div>
+          <div class="title-item t11">训练大纲</div>
+          <div class="title-item t12">资料汇总</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="libs/bootstrap.bundle.min.js"></script>
+  <script src="folders.js"></script>
+  <script>
+    const nav = document.getElementById('nav');
+    const searchInput = document.getElementById('search');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+
+    // 保存展开/折叠状态，默认全部折叠
+    const savedState = localStorage.getItem('collapsedCategories');
+    const defaultCollapsed = {};
+    categories.forEach(cat => { defaultCollapsed[cat.id] = true; });
+    const collapsedState = savedState ? JSON.parse(savedState) : defaultCollapsed;
+
+    // 移动端菜单按钮
+    mobileMenuBtn.addEventListener('click', () => {
+      sidebar.classList.add('open');
+      sidebarOverlay.classList.add('open');
+    });
+
+    sidebarOverlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('open');
+    });
+
+    function saveCollapsedState() {
+      localStorage.setItem('collapsedCategories', JSON.stringify(collapsedState));
+    }
+
+    function toggleCategory(categoryId) {
+      collapsedState[categoryId] = !collapsedState[categoryId];
+      saveCollapsedState();
+      
+      const header = document.querySelector(`[data-category="${categoryId}"]`);
+      const items = header.nextElementSibling;
+      const itemCount = items.querySelectorAll('.nav-item').length;
+      
+      if (collapsedState[categoryId]) {
+        header.classList.add('collapsed');
+        items.classList.add('collapsed');
+        items.style.maxHeight = '0';
+      } else {
+        header.classList.remove('collapsed');
+        items.classList.remove('collapsed');
+        items.style.maxHeight = (itemCount * 40) + 'px';
+      }
+    }
+
+    function renderNav(filter) {
+      const kw = (filter || '').toLowerCase();
+      
+      if (kw) {
+        // 搜索模式：扁平显示匹配项
+        const list = folders.filter(f => 
+          f.name.toLowerCase().includes(kw) || 
+          f.title.toLowerCase().includes(kw)
+        );
+        if (!list.length) {
+          nav.innerHTML = '<div style="padding:24px;text-align:center;color:#8f959e;font-size:13px">没有找到匹配的文档</div>';
+          return;
+        }
+        nav.innerHTML = list.map(f => {
+          const url = f.type === 'excel' 
+            ? `excel.html?file=${encodeURIComponent(f.name)}`
+            : `note.html?folder=${encodeURIComponent(f.name)}`;
+          return `
+            <div class="nav-item">
+              <a href="${url}" target="_blank">
+                <span class="nav-label">${f.title}</span>
+              </a>
+            </div>
+          `;
+        }).join('');
+      } else {
+        // 分类模式：按分组显示
+        nav.innerHTML = categories.map(cat => {
+          const isCollapsed = collapsedState[cat.id];
+          const itemsHtml = cat.items.map(f => {
+            const url = f.type === 'excel' 
+              ? `excel.html?file=${encodeURIComponent(f.name)}`
+              : `note.html?folder=${encodeURIComponent(f.name)}`;
+            return `
+              <div class="nav-item">
+                <a href="${url}" target="_blank">
+                  <span class="nav-label">${f.title}</span>
+                </a>
+              </div>
+            `;
+          }).join('');
+          
+          return `
+            <div class="nav-category">
+              <div class="category-header ${isCollapsed ? 'collapsed' : ''}" data-category="${cat.id}">
+                <span class="category-name">${cat.name}</span>
+                <svg class="category-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+              <div class="category-items ${isCollapsed ? 'collapsed' : ''}" style="max-height: ${isCollapsed ? '0' : cat.items.length * 40 + 'px'}">
+                ${itemsHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        // 绑定点击事件
+        document.querySelectorAll('.category-header').forEach(header => {
+          header.addEventListener('click', () => {
+            toggleCategory(header.dataset.category);
+          });
+        });
+      }
+    }
+
+    searchInput.addEventListener('input', e => renderNav(e.target.value));
+    renderNav();
+  </script>
+</body>
+</html>

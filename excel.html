@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel表格</title>
+  <style>
+    /* ===== Reset & Base ===== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #dee0e3; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #bbbfc4; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    body { background: #f5f6f7; color: #1f2329; font-size: 14px; line-height: 1.6; }
+
+    /* ===== Layout ===== */
+    .layout { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ===== Topbar ===== */
+    .topbar {
+      height: 56px; padding: 0 28px; background: #fff;
+      border-bottom: 1px solid #e5e6eb;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      border: 1px solid #dee0e3; background: #fff; color: #1f2329;
+      cursor: pointer; transition: all .15s; text-decoration: none;
+    }
+    .back-btn:hover { background: #f5f6f7; border-color: #c9cdd4; }
+    .topbar-title {
+      font-size: 15px; font-weight: 600; color: #1f2329;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .topbar-actions { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      border: 1px solid #dee0e3; background: #fff; color: #1f2329;
+      cursor: pointer; transition: all .15s; user-select: none;
+    }
+    .topbar-btn:hover { background: #f5f6f7; border-color: #c9cdd4; }
+    .topbar-btn:active { background: #eef0f3; }
+    .topbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .topbar-btn svg { width: 14px; height: 14px; color: #646a73; }
+    .topbar-btn.primary {
+      background: #3370ff; color: #fff; border-color: #3370ff;
+    }
+    .topbar-btn.primary:hover { background: #245bdb; border-color: #245bdb; }
+    .topbar-btn.primary svg { color: #fff; }
+
+    /* ===== Sheet Tabs ===== */
+    .sheet-tabs {
+      background: #fff; border-bottom: 1px solid #e5e6eb;
+      padding: 0 28px; display: flex; gap: 4px; overflow-x: auto;
+    }
+    .sheet-tab {
+      padding: 10px 16px; font-size: 13px; color: #646a73;
+      cursor: pointer; border-bottom: 2px solid transparent;
+      transition: all .15s; white-space: nowrap; user-select: none;
+    }
+    .sheet-tab:hover { color: #1f2329; background: #f5f6f7; }
+    .sheet-tab.active {
+      color: #3370ff; border-bottom-color: #3370ff; font-weight: 500;
+    }
+
+    /* ===== Content ===== */
+    .content-wrap {
+      flex: 1; overflow: auto; padding: 20px;
+    }
+    .table-container {
+      background: #fff; border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      overflow: auto; max-height: calc(100vh - 136px);
+    }
+    .excel-table {
+      width: auto; min-width: 100%; border-collapse: collapse; font-size: 13px;
+      white-space: nowrap;
+    }
+    .excel-table th {
+      background: #f7f8fa; font-weight: 600; text-align: left;
+      padding: 10px 14px; border: 1px solid #e5e6eb; color: #1f2329;
+      position: sticky; top: 0; z-index: 10; white-space: nowrap;
+    }
+    .excel-table td {
+      padding: 10px 14px; border: 1px solid #e5e6eb; color: #3b3e45;
+      white-space: nowrap;
+    }
+    .excel-table tr:hover td { background: #fafbfc; }
+
+    /* ===== Loading & Error ===== */
+    .loading-msg, .error-msg {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 400px; color: #8f959e; gap: 16px;
+    }
+    .error-msg { color: #f53f3f; }
+
+    /* ===== Toast ===== */
+    .toast-msg {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(10px);
+      background: #1f2329; color: #fff; padding: 10px 24px; border-radius: 8px;
+      font-size: 13px; opacity: 0; transition: all .3s ease; pointer-events: none; z-index: 99;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0 16px; }
+      .sheet-tabs { padding: 0 16px; }
+      .content-wrap { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="topbar">
+      <div class="topbar-left">
+        <a class="back-btn" href="index.html">返回</a>
+        <div class="topbar-title" id="title">加载中...</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" id="shareBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+          分享
+        </button>
+        <button class="topbar-btn primary" id="dlBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          下载原文件
+        </button>
+      </div>
+    </div>
+
+    <div class="sheet-tabs" id="sheetTabs"></div>
+
+    <div class="content-wrap">
+      <div class="table-container" id="content">
+        <div class="loading-msg">加载中...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toast"></div>
+
+  <script src="libs/xlsx.full.min.js"></script>
+  <script src="folders.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const file = params.get('file');
+    const titleEl = document.getElementById('title');
+    const content = document.getElementById('content');
+    const sheetTabs = document.getElementById('sheetTabs');
+    const dlBtn = document.getElementById('dlBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const toast = document.getElementById('toast');
+
+    let workbook = null;
+    let currentSheet = null;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    shareBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(location.href).then(() => showToast('链接已复制到剪贴板'));
+    });
+
+    dlBtn.addEventListener('click', () => {
+      if (!file) return;
+      const a = document.createElement('a');
+      a.href = file;
+      a.download = file.split('/').pop();
+      a.click();
+      showToast('开始下载');
+    });
+
+    function renderSheet(sheetName) {
+      const sheet = workbook.Sheets[sheetName];
+      const html = XLSX.utils.sheet_to_html(sheet, { header: '', id: 'excel-table' });
+      content.innerHTML = html;
+      
+      const table = content.querySelector('table');
+      if (table) {
+        table.className = 'excel-table';
+      }
+      
+      currentSheet = sheetName;
+      
+      // 更新标签页状态
+      document.querySelectorAll('.sheet-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.sheet === sheetName);
+      });
+    }
+
+    if (!file) {
+      content.innerHTML = '<div class="error-msg">缺少 file 参数</div>';
+    } else {
+      const info = folders.find(f => f.name === file);
+      const displayTitle = info ? info.title : file;
+      titleEl.textContent = displayTitle;
+      document.title = displayTitle + ' - 飞行部核弹俱乐部';
+
+      fetch(file)
+        .then(r => {
+          if (!r.ok) throw new Error('加载失败');
+          return r.arrayBuffer();
+        })
+        .then(data => {
+          workbook = XLSX.read(data, { type: 'array' });
+          
+          // 渲染工作表标签
+          if (workbook.SheetNames.length > 1) {
+            sheetTabs.innerHTML = workbook.SheetNames.map(name => 
+              `<div class="sheet-tab" data-sheet="${name}">${name}</div>`
+            ).join('');
+            
+            sheetTabs.querySelectorAll('.sheet-tab').forEach(tab => {
+              tab.addEventListener('click', () => renderSheet(tab.dataset.sheet));
+            });
+          } else {
+            sheetTabs.style.display = 'none';
+          }
+          
+          // 渲染第一个工作表
+          renderSheet(workbook.SheetNames[0]);
+        })
+        .catch(e => {
+          content.innerHTML = `<div class="error-msg">${e.message}</div>`;
+        });
+    }
+  </script>
+</body>
+</html>

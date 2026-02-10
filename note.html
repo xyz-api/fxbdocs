@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文档</title>
+  <style>
+    /* ===== Reset & Base ===== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #dee0e3; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #bbbfc4; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    body { background: #f5f6f7; color: #1f2329; font-size: 14px; line-height: 1.6; }
+
+    /* ===== Layout ===== */
+    .layout { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ===== Topbar ===== */
+    .topbar {
+      height: 56px; padding: 0 28px; background: #fff;
+      border-bottom: 1px solid #e5e6eb;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      border: 1px solid #dee0e3; background: #fff; color: #1f2329;
+      cursor: pointer; transition: all .15s; text-decoration: none;
+    }
+    .back-btn:hover { background: #f5f6f7; border-color: #c9cdd4; }
+    .topbar-title {
+      font-size: 15px; font-weight: 600; color: #1f2329;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .topbar-actions { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      border: 1px solid #dee0e3; background: #fff; color: #1f2329;
+      cursor: pointer; transition: all .15s; user-select: none;
+    }
+    .topbar-btn:hover { background: #f5f6f7; border-color: #c9cdd4; }
+    .topbar-btn:active { background: #eef0f3; }
+    .topbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .topbar-btn svg { width: 14px; height: 14px; color: #646a73; }
+    .topbar-btn.primary {
+      background: #3370ff; color: #fff; border-color: #3370ff;
+    }
+    .topbar-btn.primary:hover { background: #245bdb; border-color: #245bdb; }
+    .topbar-btn.primary svg { color: #fff; }
+
+    /* ===== Content ===== */
+    .content-wrap {
+      flex: 1; overflow-y: auto; display: flex; justify-content: center; padding: 28px;
+    }
+    .content-wrap.pdf-mode { padding: 0; }
+    .content-card {
+      width: 100%; max-width: 820px; background: #fff; border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.02);
+      padding: 40px 48px 60px; min-height: 400px;
+    }
+    .content-wrap.pdf-mode .content-card {
+      max-width: 100%; border-radius: 0; padding: 0; box-shadow: none;
+      min-height: 100%;
+    }
+    .pdf-iframe { width: 100%; height: 100%; border: none; }
+
+    /* ===== Markdown Styles ===== */
+    .content-card h1 {
+      font-size: 28px; font-weight: 700; color: #1f2329; margin-bottom: 8px;
+      line-height: 1.35; letter-spacing: -.02em;
+    }
+    .content-card h2 {
+      font-size: 22px; font-weight: 600; color: #1f2329; margin-top: 36px; margin-bottom: 12px;
+      padding-bottom: 8px; border-bottom: 1px solid #f0f1f5; line-height: 1.4;
+    }
+    .content-card h3 { font-size: 17px; font-weight: 600; color: #1f2329; margin-top: 24px; margin-bottom: 8px; }
+    .content-card h4 { font-size: 15px; font-weight: 600; color: #1f2329; margin-top: 20px; margin-bottom: 6px; }
+    .content-card p { line-height: 1.8; color: #3b3e45; margin: 8px 0; font-size: 15px; }
+    .content-card a { color: #3370ff; text-decoration: none; }
+    .content-card a:hover { text-decoration: underline; }
+    .content-card img { max-width: 100%; height: auto; margin: 12px 0; border-radius: 8px; }
+    .content-card ul, .content-card ol { padding-left: 24px; margin: 8px 0; color: #3b3e45; }
+    .content-card li { margin: 4px 0; line-height: 1.8; font-size: 15px; }
+    .content-card pre {
+      background: #f7f8fa; border: 1px solid #eef0f3; padding: 16px 20px;
+      border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6;
+      margin: 12px 0;
+    }
+    .content-card code {
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      font-size: 13px;
+    }
+    .content-card p code, .content-card li code {
+      background: #f0f1f5; padding: 2px 6px; border-radius: 4px; color: #d63384;
+    }
+    .content-card blockquote {
+      border-left: 3px solid #3370ff; padding: 12px 16px; margin: 16px 0;
+      background: #f7f9ff; border-radius: 0 8px 8px 0; color: #4e5969;
+    }
+    .content-card blockquote p { margin: 0; color: #4e5969; }
+    .content-card table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+    .content-card table th {
+      background: #f7f8fa; font-weight: 600; text-align: left;
+      padding: 10px 14px; border: 1px solid #e5e6eb; color: #1f2329;
+    }
+    .content-card table td { padding: 10px 14px; border: 1px solid #e5e6eb; color: #3b3e45; }
+    .content-card table tr:hover td { background: #fafbfc; }
+    .content-card hr { border: none; border-top: 1px solid #eef0f3; margin: 24px 0; }
+    .content-card strong { font-weight: 600; color: #1f2329; }
+
+    /* ===== Loading & Error ===== */
+    .loading-msg, .error-msg {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; color: #8f959e; gap: 16px; padding: 80px 20px;
+    }
+    .error-msg { color: #f53f3f; }
+
+    /* ===== Toast ===== */
+    .toast-msg {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(10px);
+      background: #1f2329; color: #fff; padding: 10px 24px; border-radius: 8px;
+      font-size: 13px; opacity: 0; transition: all .3s ease; pointer-events: none; z-index: 99;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 768px) {
+      .content-card { padding: 24px 20px 40px; border-radius: 0; }
+      .content-wrap { padding: 0; }
+      .topbar { padding: 0 16px; }
+      .topbar-title { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="topbar">
+      <div class="topbar-left">
+        <a class="back-btn" href="index.html">
+          返回
+        </a>
+        <div class="topbar-title" id="title">加载中...</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" id="shareBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+          分享
+        </button>
+        <button class="topbar-btn primary" id="dlBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          下载
+        </button>
+      </div>
+    </div>
+
+    <div class="content-wrap" id="contentWrap">
+      <div class="content-card" id="content">
+        <div class="loading-msg">加载中...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toast"></div>
+
+  <script src="libs/marked.min.js"></script>
+  <script src="libs/jszip.min.js"></script>
+  <script src="folders.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const folder = params.get('folder');
+    const titleEl = document.getElementById('title');
+    const content = document.getElementById('content');
+    const contentWrap = document.getElementById('contentWrap');
+    const dlBtn = document.getElementById('dlBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const toast = document.getElementById('toast');
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    shareBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(location.href).then(() => showToast('链接已复制到剪贴板'));
+    });
+
+    if (!folder) {
+      content.innerHTML = '<div class="error-msg">缺少 folder 参数</div>';
+    } else {
+      const info = folders.find(f => f.name === folder);
+      const displayTitle = info ? info.title : folder;
+      titleEl.textContent = displayTitle;
+      document.title = displayTitle + ' - 飞行部核弹俱乐部';
+
+      // 检查是否是 PDF 类型
+      if (info && info.type === 'pdf') {
+        // 加载 PDF
+        contentWrap.classList.add('pdf-mode');
+        content.innerHTML = '<iframe class="pdf-iframe" src="' + folder + '/index.pdf"></iframe>';
+      } else {
+        // 加载 Markdown
+        contentWrap.classList.remove('pdf-mode');
+        fetch(folder + '/index.md')
+          .then(r => { if (!r.ok) throw new Error('加载失败'); return r.text(); })
+          .then(md => {
+            md = md.replace(/!\[([^\]]*)\]\((?!https?:\/\/)([^)]+)\)/g, (m, alt, src) => {
+              return `![${alt}](${folder}/${src})`;
+            });
+            content.innerHTML = marked.parse(md);
+          })
+          .catch(e => {
+            content.innerHTML = `<div class="error-msg">${e.message}</div>`;
+          });
+      }
+
+      dlBtn.addEventListener('click', async () => {
+        dlBtn.disabled = true;
+        dlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg> 打包中...';
+        try {
+          if (info && info.type === 'pdf') {
+            // 下载 PDF
+            const res = await fetch(folder + '/index.pdf');
+            const blob = await res.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = info.title + '.pdf';
+            a.click();
+            URL.revokeObjectURL(a.href);
+          } else {
+            // 下载 Markdown + 图片
+            const mdRes = await fetch(folder + '/index.md');
+            const mdText = await mdRes.text();
+            const zip = new JSZip();
+            zip.file('index.md', mdText);
+
+            const imgRegex = /!\[[^\]]*\]\((?!https?:\/\/)([^)]+)\)/g;
+            const images = [];
+            let match;
+            while ((match = imgRegex.exec(mdText)) !== null) {
+              images.push(match[1].replace(/^\.\//, ''));
+            }
+
+            await Promise.all(images.map(async (img) => {
+              try {
+                const res = await fetch(folder + '/' + img);
+                if (res.ok) zip.file(img, await res.blob());
+              } catch (e) {}
+            }));
+
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = (info ? info.title : folder.replace(/\//g, '_')) + '.zip';
+            a.click();
+            URL.revokeObjectURL(a.href);
+          }
+          showToast('下载成功');
+        } catch (e) {
+          showToast('下载失败');
+        }
+        dlBtn.disabled = false;
+        dlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 下载';
+      });
+    }
+  </script>
+</body>
+</html>
