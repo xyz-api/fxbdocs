@@ -30,6 +30,7 @@ const categories = [
       { name: '手册/请教/技术管理手册/副驾驶部分', title: '副驾驶部分', type: 'md' },
       { name: '手册/请教/技术管理手册/机长部分', title: '机长部分', type: 'md' },
       { name: '手册/请教/技术管理手册/教员部分', title: '教员部分', type: 'md' },
+      { name: '手册/请教/技术管理手册/其他', title: '其他', type: 'md' },
     ]
   },
   {
